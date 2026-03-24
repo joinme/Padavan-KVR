@@ -38,95 +38,77 @@ jobs:
         cpio git python3-docutils gettext automake autopoint texinfo build-essential help2man \
         pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
         
-    - name: Clone source code and setup toolchain
+        - name: Clone source code and setup toolchain
       env:
         KERNEL: 3.4
       run: |
-        # 克隆源码
         git clone --depth=1 https://github.com/joinme/Padavan-KVR.git /opt/rt-n56u
-        
         cd /opt/rt-n56u/toolchain-mipsel
         
         echo "=== 下载工具链 ==="
         for i in 1 2 3; do
-          if sh dl_toolchain.sh; then
-            echo "工具链下载成功"
-            break
-          fi
-          echo "工具链下载失败，重试 $i..."
+          sh dl_toolchain.sh && break
           sleep 5
         done
         
-        echo "=== 下载后的目录内容 ==="
+        echo "=== 初始目录内容 ==="
         ls -la
         
-        # 检查压缩包是否存在
+        # 解压压缩包（如果存在）
         if [ -f "mipsel-linux-uclibc.tar.xz" ]; then
-          echo "=== 压缩包信息 ==="
-          file mipsel-linux-uclibc.tar.xz
-          ls -lh mipsel-linux-uclibc.tar.xz
-          
-          # 查看压缩包内容（不解压）
-          echo "=== 压缩包内容预览 ==="
-          tar -tf mipsel-linux-uclibc.tar.xz | head -20
-          
-          # 解压到正确位置
-          echo "=== 开始解压 ==="
-          # 先备份可能存在的目录
-          if [ -d "mipsel-linux-uclibc" ]; then
-            mv mipsel-linux-uclibc mipsel-linux-uclibc.bak.$(date +%s)
+          echo "=== 解压工具链 ==="
+          # 删除可能存在的空目录
+          if [ -d "mipsel-linux-uclibc" ] && [ ! -f "mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc" ]; then
+            echo "删除空/损坏的工具链目录"
+            rm -rf mipsel-linux-uclibc
           fi
           
-          # 解压
           tar -xJf mipsel-linux-uclibc.tar.xz
-          
-          echo "=== 解压后的目录 ==="
+          echo "=== 解压后 ==="
           ls -la
         fi
         
-        # 查找实际的工具链目录
-        echo "=== 查找工具链 ==="
-        find . -maxdepth 2 -type d -name "bin" 2>/dev/null
-        
-        # 确定正确的工具链路径
-        if [ -d "mipsel-linux-uclibc/bin" ]; then
-          echo "找到标准工具链目录"
-          TOOLCHAIN_PATH="mipsel-linux-uclibc"
-          ls -la mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc || echo "编译器不存在"
-        elif [ -f "toolchain-3.4.x/bin/mipsel-linux-uclibc-gcc" ]; then
-          echo "找到 toolchain-3.4.x 工具链"
-          TOOLCHAIN_PATH="toolchain-3.4.x"
-        else
-          # 深度搜索
-          echo "深度搜索编译器..."
-          GCC_PATH=$(find . -name "mipsel-linux-uclibc-gcc" -type f 2>/dev/null | head -1)
-          if [ -n "$GCC_PATH" ]; then
-            echo "找到编译器: $GCC_PATH"
-            TOOLCHAIN_PATH=$(dirname $(dirname "$GCC_PATH"))
-            echo "工具链路径: $TOOLCHAIN_PATH"
-          else
-            echo "错误: 找不到编译器"
-            exit 1
+        # 详细检查每个可能的 bin 目录
+        echo "=== 检查各 bin 目录内容 ==="
+        for bindir in ./bin ./mipsel-linux-uclibc/bin ./toolchain-3.4.x/bin; do
+          if [ -d "$bindir" ]; then
+            echo "--- $bindir ---"
+            ls -la "$bindir" | head -10
+            if [ -f "$bindir/mipsel-linux-uclibc-gcc" ]; then
+              echo "找到编译器在: $bindir"
+              GCC_BIN="$bindir/mipsel-linux-uclibc-gcc"
+            fi
           fi
+        done
+        
+        # 如果还没找到，深度搜索
+        if [ -z "$GCC_BIN" ]; then
+          echo "=== 深度搜索编译器 ==="
+          GCC_BIN=$(find . -name "mipsel-linux-uclibc-gcc" -type f 2>/dev/null | head -1)
         fi
         
-        # 测试编译器
-        echo "=== 测试编译器 ==="
-        $TOOLCHAIN_PATH/bin/mipsel-linux-uclibc-gcc --version
-        
-        # 创建符号链接（确保 build_firmware_modify 能找到）
-        if [ "$TOOLCHAIN_PATH" != "mipsel-linux-uclibc" ]; then
-          rm -f mipsel-linux-uclibc
-          ln -sf $TOOLCHAIN_PATH mipsel-linux-uclibc
-          echo "创建符号链接: mipsel-linux-uclibc -> $TOOLCHAIN_PATH"
+        if [ -z "$GCC_BIN" ]; then
+          echo "错误: 找不到编译器"
+          exit 1
         fi
         
-        # 最终验证
+        echo "编译器路径: $GCC_BIN"
+        $GCC_BIN --version
+        
+        # 确定工具链根目录
+        TOOLCHAIN_BIN=$(dirname "$GCC_BIN")
+        TOOLCHAIN_ROOT=$(dirname "$TOOLCHAIN_BIN")
+        
+        echo "工具链根目录: $TOOLCHAIN_ROOT"
+        
+        # 创建/修复符号链接
+        rm -f mipsel-linux-uclibc
+        ln -sf "$TOOLCHAIN_ROOT" mipsel-linux-uclibc
+        
         echo "=== 最终验证 ==="
         ls -la mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc
-        mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc --version
+        ./mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc --version
         
-        # 创建输出目录
         mkdir -p /opt/images/
 
     - name: Prepare H351N USB Print Config
