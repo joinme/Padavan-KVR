@@ -48,7 +48,6 @@ jobs:
         cd /opt/rt-n56u/toolchain-mipsel
         
         echo "=== 下载工具链 ==="
-        # 下载工具链（带重试）
         for i in 1 2 3; do
           if sh dl_toolchain.sh; then
             echo "工具链下载成功"
@@ -58,31 +57,74 @@ jobs:
           sleep 5
         done
         
-        echo "=== 工具链目录内容 ==="
+        echo "=== 下载后的目录内容 ==="
         ls -la
         
-        # 检查并解压工具链
-        if [ ! -d "mipsel-linux-uclibc" ]; then
-          echo "查找压缩包..."
-          for f in *.tar.gz *.tar.xz *.tar.bz2; do
-            if [ -f "$f" ]; then
-              echo "解压 $f"
-              tar -xf "$f"
-              break
-            fi
-          done
+        # 检查压缩包是否存在
+        if [ -f "mipsel-linux-uclibc.tar.xz" ]; then
+          echo "=== 压缩包信息 ==="
+          file mipsel-linux-uclibc.tar.xz
+          ls -lh mipsel-linux-uclibc.tar.xz
+          
+          # 查看压缩包内容（不解压）
+          echo "=== 压缩包内容预览 ==="
+          tar -tf mipsel-linux-uclibc.tar.xz | head -20
+          
+          # 解压到正确位置
+          echo "=== 开始解压 ==="
+          # 先备份可能存在的目录
+          if [ -d "mipsel-linux-uclibc" ]; then
+            mv mipsel-linux-uclibc mipsel-linux-uclibc.bak.$(date +%s)
+          fi
+          
+          # 解压
+          tar -xJf mipsel-linux-uclibc.tar.xz
+          
+          echo "=== 解压后的目录 ==="
+          ls -la
         fi
         
-        # 验证工具链
+        # 查找实际的工具链目录
+        echo "=== 查找工具链 ==="
+        find . -maxdepth 2 -type d -name "bin" 2>/dev/null
+        
+        # 确定正确的工具链路径
         if [ -d "mipsel-linux-uclibc/bin" ]; then
-          echo "=== 工具链已就绪 ==="
-          ls -la mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc
-          ./mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc --version
+          echo "找到标准工具链目录"
+          TOOLCHAIN_PATH="mipsel-linux-uclibc"
+          ls -la mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc || echo "编译器不存在"
+        elif [ -f "toolchain-3.4.x/bin/mipsel-linux-uclibc-gcc" ]; then
+          echo "找到 toolchain-3.4.x 工具链"
+          TOOLCHAIN_PATH="toolchain-3.4.x"
         else
-          echo "=== 工具链结构异常 ==="
-          find . -name "gcc" -o -name "*uclibc*" | head -10
-          exit 1
+          # 深度搜索
+          echo "深度搜索编译器..."
+          GCC_PATH=$(find . -name "mipsel-linux-uclibc-gcc" -type f 2>/dev/null | head -1)
+          if [ -n "$GCC_PATH" ]; then
+            echo "找到编译器: $GCC_PATH"
+            TOOLCHAIN_PATH=$(dirname $(dirname "$GCC_PATH"))
+            echo "工具链路径: $TOOLCHAIN_PATH"
+          else
+            echo "错误: 找不到编译器"
+            exit 1
+          fi
         fi
+        
+        # 测试编译器
+        echo "=== 测试编译器 ==="
+        $TOOLCHAIN_PATH/bin/mipsel-linux-uclibc-gcc --version
+        
+        # 创建符号链接（确保 build_firmware_modify 能找到）
+        if [ "$TOOLCHAIN_PATH" != "mipsel-linux-uclibc" ]; then
+          rm -f mipsel-linux-uclibc
+          ln -sf $TOOLCHAIN_PATH mipsel-linux-uclibc
+          echo "创建符号链接: mipsel-linux-uclibc -> $TOOLCHAIN_PATH"
+        fi
+        
+        # 最终验证
+        echo "=== 最终验证 ==="
+        ls -la mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc
+        mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc --version
         
         # 创建输出目录
         mkdir -p /opt/images/
