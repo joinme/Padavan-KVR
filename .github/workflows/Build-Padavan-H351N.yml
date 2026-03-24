@@ -7,7 +7,7 @@ on:
       enable_cups:
         description: '启用 CUPS 打印系统（更大体积）'
         required: false
-        default: 'false'
+        default: false
         type: boolean
   
   schedule:
@@ -22,7 +22,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
