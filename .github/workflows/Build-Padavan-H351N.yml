@@ -48,7 +48,7 @@ jobs:
       run: |
         cd /opt/rt-n56u/trunk/configs/templates
 
-        cat > h351n-usbprint.config << 'EOF'
+        cat > H351N-USBPRINT.config << 'EOF'
         ### H351N 百米路由器3 USB打印版配置 ###
         CONFIG_PRODUCT="H351N-USBPRINT"
         CONFIG_FIRMWARE_PRODUCT_ID="H351N-USBPRINT"
@@ -101,19 +101,19 @@ jobs:
 
         # 如果需要 CUPS，修改配置
         if [ "${{ env.ENABLE_CUPS }}" = "true" ]; then
-        sed -i 's/CONFIG_FIRMWARE_ENABLE_CUPS=n/CONFIG_FIRMWARE_ENABLE_CUPS=y/' h351n-usbprint.config
-        sed -i 's/CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=n/CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=y/' h351n-usbprint.config
-        sed -i 's/CONFIG_FIRMWARE_ENABLE_P910ND=y/CONFIG_FIRMWARE_ENABLE_P910ND=n/' h351n-usbprint.config
-        sed -i 's/CONFIG_FIRMWARE_VERSION="3.4.3.9-099-usbprint"/CONFIG_FIRMWARE_VERSION="3.4.3.9-099-cups"/' h351n-usbprint.config
+        sed -i 's/CONFIG_FIRMWARE_ENABLE_CUPS=n/CONFIG_FIRMWARE_ENABLE_CUPS=y/' H351N-USBPRINT.config
+        sed -i 's/CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=n/CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=y/' H351N-USBPRINT.config
+        sed -i 's/CONFIG_FIRMWARE_ENABLE_P910ND=y/CONFIG_FIRMWARE_ENABLE_P910ND=n/' H351N-USBPRINT.config
+        sed -i 's/CONFIG_FIRMWARE_VERSION="3.4.3.9-099-usbprint"/CONFIG_FIRMWARE_VERSION="3.4.3.9-099-cups"/' H351N-USBPRINT.config
         fi
 
     - name: Prepare H351N Board Support
       run: |
         cd /opt/rt-n56u/trunk/configs/boards
 
-        cp -r NEWIFI-MINI h351n-usbprint
+        cp -r NEWIFI-MINI H351N-USBPRINT
 
-        cat > h351n-usbprint/board.h << 'EOF'
+        cat > H351N-USBPRINT/board.h << 'EOF'
         #ifndef __BOARD_H__
         #define __BOARD_H__
 
@@ -265,7 +265,7 @@ jobs:
         chmod +x user/usbprinter/files/usb-printer.init
     - name: Build Firmware
       env:
-        TNAME: h351n-usbprint
+        TNAME: H351N-USBPRINT
         KERNEL: 3.4
       run: |
         cd /opt/rt-n56u/trunk
