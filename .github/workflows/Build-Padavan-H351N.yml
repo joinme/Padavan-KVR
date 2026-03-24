@@ -226,18 +226,34 @@ jobs:
       run: |
         cd /opt/rt-n56u/trunk
         
-        # 设置工具链路径
-        export TOOLCHAIN_DIR=/opt/rt-n56u/toolchain-mipsel
-        export PATH=$TOOLCHAIN_DIR/mipsel-linux-uclibc/bin:$PATH
+        # 设置正确的工具链路径
+        TOOLCHAIN_BASE=/opt/rt-n56u/toolchain-mipsel
+        
+        # 检测实际工具链目录
+        if [ -d "$TOOLCHAIN_BASE/toolchain-3.4.x/bin" ]; then
+          export TOOLCHAIN_DIR=$TOOLCHAIN_BASE/toolchain-3.4.x
+        elif [ -d "$TOOLCHAIN_BASE/toolchain-3.4.x/mipsel-linux-uclibc/bin" ]; then
+          export TOOLCHAIN_DIR=$TOOLCHAIN_BASE/toolchain-3.4.x/mipsel-linux-uclibc
+        elif [ -d "$TOOLCHAIN_BASE/mipsel-linux-uclibc/bin" ]; then
+          export TOOLCHAIN_DIR=$TOOLCHAIN_BASE/mipsel-linux-uclibc
+        else
+          # 自动查找
+          export TOOLCHAIN_DIR=$(find $TOOLCHAIN_BASE -name "mipsel-linux-uclibc-gcc" -type f | head -1 | xargs dirname | xargs dirname)
+        fi
+        
+        export PATH=$TOOLCHAIN_DIR/bin:$PATH
         
         echo "=== 环境检查 ==="
         echo "TOOLCHAIN_DIR: $TOOLCHAIN_DIR"
         echo "PATH: $PATH"
+        ls -la $TOOLCHAIN_DIR/bin/mipsel-linux-uclibc-gcc
+        $TOOLCHAIN_DIR/bin/mipsel-linux-uclibc-gcc --version
         
-        # 验证编译器
-        echo "=== 验证工具链 ==="
-        which mipsel-linux-uclibc-gcc
-        mipsel-linux-uclibc-gcc --version
+        # 创建符号链接（让 build_firmware_modify 能找到）
+        if [ ! -d "$TOOLCHAIN_BASE/mipsel-linux-uclibc" ]; then
+          ln -sf $TOOLCHAIN_DIR $TOOLCHAIN_BASE/mipsel-linux-uclibc
+        fi
+        
         
         # 检查配置文件
         if [ ! -f configs/templates/$TNAME.config ]; then
