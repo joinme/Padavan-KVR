@@ -1,5 +1,5 @@
 #修改TNAME: K2P 中的K2P为你需要编译的型号，注意名称要与configs/templates/目录下的名字相同
-name: Build-Padavan-H351N
+name: Build-Padavan-H351-N
 
 on: 
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
       enable_cups:
         description: '启用 CUPS 打印系统（更大体积）'
         required: false
-        default: false
+        default: 'false'
         type: boolean
   
   schedule:
@@ -46,223 +46,223 @@ jobs:
         mkdir -p /opt/images/
     - name: Prepare H351N USB Print Config
       run: |
-          cd /opt/rt-n56u/trunk/configs/templates
-          
-          cat > h351n-usbprint.config << 'EOF'
-          ### H351N 百米路由器3 USB打印版配置 ###
-          CONFIG_PRODUCT="H351N-USBPRINT"
-          CONFIG_FIRMWARE_PRODUCT_ID="H351N"
-          CONFIG_FIRMWARE_VERSION="3.4.3.9-099-usbprint"
-          
-          ### 平台 ###
-          CONFIG_FIRMWARE_CHIP_ID="MT7620A"
-          
-          ### 硬件规格 ###
-          CONFIG_FIRMWARE_FLASH_SIZE="16"
-          CONFIG_FIRMWARE_RAM_SIZE="128"
-          
-          ### 无线：仅 2.4G ###
-          CONFIG_FIRMWARE_WIFI2_DRIVER="mt7620"
-          CONFIG_FIRMWARE_WIFI5_DRIVER=""
-          
-          ### 网口 ###
-          CONFIG_FIRMWARE_WAN_IFNAME="eth2.2"
-          CONFIG_FIRMWARE_LAN_IFNAME="eth2.1"
-          
-          ### USB 支持（核心）###
-          CONFIG_FIRMWARE_ENABLE_USB=y
-          CONFIG_FIRMWARE_ENABLE_USB_PRINTER=y
-          CONFIG_FIRMWARE_ENABLE_USB_STORAGE=n
-          CONFIG_FIRMWARE_ENABLE_U2EC=y
-          CONFIG_FIRMWARE_ENABLE_LPR=y
-          
-          ### 打印服务器：p910nd（轻量级）###
-          CONFIG_FIRMWARE_ENABLE_P910ND=y
-          
-          ### 可选：CUPS（功能更强，体积大）###
-          CONFIG_FIRMWARE_ENABLE_CUPS=n
-          CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=n
-          
-          ### 网络共享（按需启用）###
-          CONFIG_FIRMWARE_ENABLE_SMB=n
-          CONFIG_FIRMWARE_ENABLE_FTP=n
-          
-          ### 禁用其他节省空间 ###
-          CONFIG_FIRMWARE_ENABLE_SHADOWSOCKS=n
-          CONFIG_FIRMWARE_ENABLE_ADBYBY=n
-          CONFIG_FIRMWARE_ENABLE_DDNS=n
-          CONFIG_FIRMWARE_ENABLE_UPNP=n
-          
-          ### LED 和按键 ###
-          CONFIG_FIRMWARE_LED_GPIO="13"
-          CONFIG_FIRMWARE_RESET_GPIO="1"
-          CONFIG_FIRMWARE_WPS_GPIO="0"
-          EOF
+        cd /opt/rt-n56u/trunk/configs/templates
 
-          # 如果需要 CUPS，修改配置
-          if [ "${{ env.ENABLE_CUPS }}" = "true" ]; then
-            sed -i 's/CONFIG_FIRMWARE_ENABLE_CUPS=n/CONFIG_FIRMWARE_ENABLE_CUPS=y/' h351n-usbprint.config
-            sed -i 's/CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=n/CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=y/' h351n-usbprint.config
-            sed -i 's/CONFIG_FIRMWARE_ENABLE_P910ND=y/CONFIG_FIRMWARE_ENABLE_P910ND=n/' h351n-usbprint.config
-            sed -i 's/CONFIG_FIRMWARE_VERSION="3.4.3.9-099-usbprint"/CONFIG_FIRMWARE_VERSION="3.4.3.9-099-cups"/' h351n-usbprint.config
-          fi
+        cat > h351n-usbprint.config << 'EOF'
+        ### H351N 百米路由器3 USB打印版配置 ###
+        CONFIG_PRODUCT="H351N-USBPRINT"
+        CONFIG_FIRMWARE_PRODUCT_ID="H351N"
+        CONFIG_FIRMWARE_VERSION="3.4.3.9-099-usbprint"
+
+        ### 平台 ###
+        CONFIG_FIRMWARE_CHIP_ID="MT7620A"
+
+        ### 硬件规格 ###
+        CONFIG_FIRMWARE_FLASH_SIZE="16"
+        CONFIG_FIRMWARE_RAM_SIZE="128"
+
+        ### 无线：仅 2.4G ###
+        CONFIG_FIRMWARE_WIFI2_DRIVER="mt7620"
+        CONFIG_FIRMWARE_WIFI5_DRIVER=""
+
+        ### 网口 ###
+        CONFIG_FIRMWARE_WAN_IFNAME="eth2.2"
+        CONFIG_FIRMWARE_LAN_IFNAME="eth2.1"
+
+        ### USB 支持（核心）###
+        CONFIG_FIRMWARE_ENABLE_USB=y
+        CONFIG_FIRMWARE_ENABLE_USB_PRINTER=y
+        CONFIG_FIRMWARE_ENABLE_USB_STORAGE=n
+        CONFIG_FIRMWARE_ENABLE_U2EC=y
+        CONFIG_FIRMWARE_ENABLE_LPR=y
+
+        ### 打印服务器：p910nd（轻量级）###
+        CONFIG_FIRMWARE_ENABLE_P910ND=y
+
+        ### 可选：CUPS（功能更强，体积大）###
+        CONFIG_FIRMWARE_ENABLE_CUPS=n
+        CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=n
+
+        ### 网络共享（按需启用）###
+        CONFIG_FIRMWARE_ENABLE_SMB=n
+        CONFIG_FIRMWARE_ENABLE_FTP=n
+
+        ### 禁用其他节省空间 ###
+        CONFIG_FIRMWARE_ENABLE_SHADOWSOCKS=n
+        CONFIG_FIRMWARE_ENABLE_ADBYBY=n
+        CONFIG_FIRMWARE_ENABLE_DDNS=n
+        CONFIG_FIRMWARE_ENABLE_UPNP=n
+
+        ### LED 和按键 ###
+        CONFIG_FIRMWARE_LED_GPIO="13"
+        CONFIG_FIRMWARE_RESET_GPIO="1"
+        CONFIG_FIRMWARE_WPS_GPIO="0"
+        EOF
+
+        # 如果需要 CUPS，修改配置
+        if [ "${{ env.ENABLE_CUPS }}" = "true" ]; then
+        sed -i 's/CONFIG_FIRMWARE_ENABLE_CUPS=n/CONFIG_FIRMWARE_ENABLE_CUPS=y/' h351n-usbprint.config
+        sed -i 's/CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=n/CONFIG_FIRMWARE_ENABLE_CUPS_BJNP=y/' h351n-usbprint.config
+        sed -i 's/CONFIG_FIRMWARE_ENABLE_P910ND=y/CONFIG_FIRMWARE_ENABLE_P910ND=n/' h351n-usbprint.config
+        sed -i 's/CONFIG_FIRMWARE_VERSION="3.4.3.9-099-usbprint"/CONFIG_FIRMWARE_VERSION="3.4.3.9-099-cups"/' h351n-usbprint.config
+        fi
 
     - name: Prepare H351N Board Support
       run: |
-          cd /opt/rt-n56u/trunk/configs/boards
-          
-          cp -r newifi-mini h351n-usbprint
-          
-          cat > h351n-usbprint/board.h << 'EOF'
-          #ifndef __BOARD_H__
-          #define __BOARD_H__
-          
-          #define BOARD_PID_NAME          "H351N"
-          #define BOARD_PID_INFO          "BaiMi Router 3 USB Print (MT7620A)"
-          #define BOARD_BOOT_TIME         30
-          #define BOARD_FLASH_TIME        120
-          
-          /* GPIO */
-          #define BOARD_GPIO_BTN_RESET    1
-          #define BOARD_GPIO_BTN_WPS      0
-          #define BOARD_GPIO_LED_POWER    13
-          #define BOARD_GPIO_LED_WIFI     14
-          #define BOARD_GPIO_LED_USB      15
-          
-          /* 无线：单频 2.4G */
-          #define BOARD_NUM_ANT_5G        0
-          #define BOARD_NUM_ANT_2G        2
-          #define BOARD_HAS_5G_WLAN       0
-          
-          /* USB 打印支持 */
-          #define BOARD_HAS_USB           1
-          #define BOARD_USB_PORT_SWAP     0
-          #define BOARD_USB3_PORT_SWAP    0
-          #define BOARD_USB_PRINTER       1
-          
-          /* 网口 */
-          #define BOARD_NUM_ETH_EPHY      5
-          #define BOARD_ETH_ADDR          0x0
-          #define BOARD_HAS_EPHY_L1000    0
-          #define BOARD_HAS_EPHY_W1000    0
-          
-          #endif
-          EOF
+        cd /opt/rt-n56u/trunk/configs/boards
+
+        cp -r newifi-mini h351n-usbprint
+
+        cat > h351n-usbprint/board.h << 'EOF'
+        #ifndef __BOARD_H__
+        #define __BOARD_H__
+
+        #define BOARD_PID_NAME          "H351N"
+        #define BOARD_PID_INFO          "BaiMi Router 3 USB Print (MT7620A)"
+        #define BOARD_BOOT_TIME         30
+        #define BOARD_FLASH_TIME        120
+
+        /* GPIO */
+        #define BOARD_GPIO_BTN_RESET    1
+        #define BOARD_GPIO_BTN_WPS      0
+        #define BOARD_GPIO_LED_POWER    13
+        #define BOARD_GPIO_LED_WIFI     14
+        #define BOARD_GPIO_LED_USB      15
+
+        /* 无线：单频 2.4G */
+        #define BOARD_NUM_ANT_5G        0
+        #define BOARD_NUM_ANT_2G        2
+        #define BOARD_HAS_5G_WLAN       0
+
+        /* USB 打印支持 */
+        #define BOARD_HAS_USB           1
+        #define BOARD_USB_PORT_SWAP     0
+        #define BOARD_USB3_PORT_SWAP    0
+        #define BOARD_USB_PRINTER       1
+
+        /* 网口 */
+        #define BOARD_NUM_ETH_EPHY      5
+        #define BOARD_ETH_ADDR          0x0
+        #define BOARD_HAS_EPHY_L1000    0
+        #define BOARD_HAS_EPHY_W1000    0
+
+        #endif
+        EOF
 
     - name: Disable MT7612E Driver
       run: |
-          cd /opt/rt-n56u/trunk
-          
-          # 禁用 MT7612E
-          find . -name "Makefile" -path "*/mt76x2/*" -exec sed -i 's/CONFIG_MT7612E_AP=m/CONFIG_MT7612E_AP=n/g' {} \;
-          find . -name "Makefile" -path "*/mt76x2/*" -exec sed -i 's/CONFIG_MT7612E_AP=y/CONFIG_MT7612E_AP=n/g' {} \;
-          
-          # 确保 mt7620 启用
-          echo "CONFIG_MT7620_AP=y" >> linux-3.4.x/.config 2>/dev/null || true
+        cd /opt/rt-n56u/trunk
+
+        # 禁用 MT7612E
+        find . -name "Makefile" -path "*/mt76x2/*" -exec sed -i 's/CONFIG_MT7612E_AP=m/CONFIG_MT7612E_AP=n/g' {} \;
+        find . -name "Makefile" -path "*/mt76x2/*" -exec sed -i 's/CONFIG_MT7612E_AP=y/CONFIG_MT7612E_AP=n/g' {} \;
+
+        # 确保 mt7620 启用
+        echo "CONFIG_MT7620_AP=y" >> linux-3.4.x/.config 2>/dev/null || true
 
     - name: Add USB Printer Packages
       run: |
-          cd /opt/rt-n56u/trunk
+        cd /opt/rt-n56u/trunk
+
+        # 确保 p910nd 配置正确
+        cat >> user/p910nd/Makefile << 'EOF'
+
+        # 添加更多打印机支持
+        CONFIG_P910ND_LPD=y
+        EOF
+
+        # 创建 USB 打印初始化脚本
+        mkdir -p user/usbprinter
+        cat > user/usbprinter/Makefile << 'EOF'
+        # USB Printer support for H351N
+        include $(TOPDIR)/rules.mk
+
+        PKG_NAME:=usbprinter
+        PKG_VERSION:=1.0
+        PKG_RELEASE:=1
+
+        include $(INCLUDE_DIR)/package.mk
+
+        define Package/usbprinter
+        SECTION:=utils
+        CATEGORY:=Utilities
+        TITLE:=USB Printer support for H351N
+        DEPENDS:=+kmod-usb-printer +p910nd
+        endef
+
+        define Package/usbprinter/install
+        $(INSTALL_DIR) $(1)/etc/hotplug.d/usb
+        $(INSTALL_BIN) ./files/usb-printer.hotplug $(1)/etc/hotplug.d/usb/10-printer
+        $(INSTALL_DIR) $(1)/etc/init.d
+        $(INSTALL_BIN) ./files/usb-printer.init $(1)/etc/init.d/usb-printer
+        endef
+
+        $(eval $(call BuildPackage,usbprinter))
+        EOF
+
+        mkdir -p user/usbprinter/files
+
+        # 创建热插拔脚本（自动检测打印机）
+        cat > user/usbprinter/files/usb-printer.hotplug << 'HOTPLUG'
+        #!/bin/sh
+        # USB 打印机热插拔脚本
+
+        case "$ACTION" in
+        add)
+          # 等待设备初始化
+          sleep 2
           
-          # 确保 p910nd 配置正确
-          cat >> user/p910nd/Makefile << 'EOF'
-          
-          # 添加更多打印机支持
-          CONFIG_P910ND_LPD=y
-          EOF
-          
-          # 创建 USB 打印初始化脚本
-          mkdir -p user/usbprinter
-          cat > user/usbprinter/Makefile << 'EOF'
-          # USB Printer support for H351N
-          include $(TOPDIR)/rules.mk
-          
-          PKG_NAME:=usbprinter
-          PKG_VERSION:=1.0
-          PKG_RELEASE:=1
-          
-          include $(INCLUDE_DIR)/package.mk
-          
-          define Package/usbprinter
-            SECTION:=utils
-            CATEGORY:=Utilities
-            TITLE:=USB Printer support for H351N
-            DEPENDS:=+kmod-usb-printer +p910nd
-          endef
-          
-          define Package/usbprinter/install
-            $(INSTALL_DIR) $(1)/etc/hotplug.d/usb
-            $(INSTALL_BIN) ./files/usb-printer.hotplug $(1)/etc/hotplug.d/usb/10-printer
-            $(INSTALL_DIR) $(1)/etc/init.d
-            $(INSTALL_BIN) ./files/usb-printer.init $(1)/etc/init.d/usb-printer
-          endef
-          
-          $(eval $(call BuildPackage,usbprinter))
-          EOF
-          
-          mkdir -p user/usbprinter/files
-          
-          # 创建热插拔脚本（自动检测打印机）
-          cat > user/usbprinter/files/usb-printer.hotplug << 'HOTPLUG'
-          #!/bin/sh
-          # USB 打印机热插拔脚本
-          
-          case "$ACTION" in
-            add)
-              # 等待设备初始化
-              sleep 2
+          # 查找 USB 打印机设备
+          for dev in /dev/usb/lp*; do
+            if [ -c "$dev" ]; then
+              logger -t usb-printer "检测到打印机: $dev"
               
-              # 查找 USB 打印机设备
-              for dev in /dev/usb/lp*; do
-                if [ -c "$dev" ]; then
-                  logger -t usb-printer "检测到打印机: $dev"
-                  
-                  # 启动 p910nd
-                  /etc/init.d/p910nd restart
-                  
-                  # 可选：发送通知
-                  echo "USB打印机已连接: $dev" > /dev/console
-                fi
-              done
-              ;;
+              # 启动 p910nd
+              /etc/init.d/p910nd restart
               
-            remove)
-              logger -t usb-printer "USB 打印机已移除"
-              ;;
-          esac
-          HOTPLUG
+              # 可选：发送通知
+              echo "USB打印机已连接: $dev" > /dev/console
+            fi
+          done
+          ;;
           
-          chmod +x user/usbprinter/files/usb-printer.hotplug
-          
-          # 创建初始化脚本
-          cat > user/usbprinter/files/usb-printer.init << 'INIT'
-          #!/bin/sh /etc/rc.common
-          # USB 打印机服务
-          
-          START=50
-          STOP=10
-          
-          start() {
-            # 加载 USB 打印机内核模块
-            modprobe usblp 2>/dev/null || insmod usblp 2>/dev/null
-            
-            # 确保设备节点存在
-            mkdir -p /dev/usb
-            [ -c /dev/usb/lp0 ] || mknod /dev/usb/lp0 c 180 0 2>/dev/null
-            
-            # 启动 p910nd
-            /etc/init.d/p910nd start 2>/dev/null
-            
-            logger -t usb-printer "USB 打印服务已启动"
-          }
-          
-          stop() {
-            /etc/init.d/p910nd stop 2>/dev/null
-            logger -t usb-printer "USB 打印服务已停止"
-          }
-          INIT
-          
-          chmod +x user/usbprinter/files/usb-printer.init
+        remove)
+          logger -t usb-printer "USB 打印机已移除"
+          ;;
+        esac
+        HOTPLUG
+
+        chmod +x user/usbprinter/files/usb-printer.hotplug
+
+        # 创建初始化脚本
+        cat > user/usbprinter/files/usb-printer.init << 'INIT'
+        #!/bin/sh /etc/rc.common
+        # USB 打印机服务
+
+        START=50
+        STOP=10
+
+        start() {
+        # 加载 USB 打印机内核模块
+        modprobe usblp 2>/dev/null || insmod usblp 2>/dev/null
+
+        # 确保设备节点存在
+        mkdir -p /dev/usb
+        [ -c /dev/usb/lp0 ] || mknod /dev/usb/lp0 c 180 0 2>/dev/null
+
+        # 启动 p910nd
+        /etc/init.d/p910nd start 2>/dev/null
+
+        logger -t usb-printer "USB 打印服务已启动"
+        }
+
+        stop() {
+        /etc/init.d/p910nd stop 2>/dev/null
+        logger -t usb-printer "USB 打印服务已停止"
+        }
+        INIT
+
+        chmod +x user/usbprinter/files/usb-printer.init
     - name: Build Firmware
       env:
         TNAME: h351n-usbprint
