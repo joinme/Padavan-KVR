@@ -51,7 +51,7 @@ jobs:
         cat > h351n-usbprint.config << 'EOF'
         ### H351N 百米路由器3 USB打印版配置 ###
         CONFIG_PRODUCT="H351N-USBPRINT"
-        CONFIG_FIRMWARE_PRODUCT_ID="H351N"
+        CONFIG_FIRMWARE_PRODUCT_ID="H351N-USBPRINT"
         CONFIG_FIRMWARE_VERSION="3.4.3.9-099-usbprint"
 
         ### 平台 ###
