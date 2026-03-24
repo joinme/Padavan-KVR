@@ -38,7 +38,7 @@ jobs:
         cpio git python3-docutils gettext automake autopoint texinfo build-essential help2man \
         pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
         
-    - name: Clone source code and setup toolchain
+      - name: Clone source code and setup toolchain
       env:
         KERNEL: 3.4
       run: |
@@ -57,24 +57,30 @@ jobs:
         # 解压压缩包（如果存在）
         if [ -f "mipsel-linux-uclibc.tar.xz" ]; then
           echo "=== 解压工具链 ==="
-          # 删除可能存在的空目录
-          if [ -d "mipsel-linux-uclibc" ] && [ ! -f "mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc" ]; then
-            echo "删除空/损坏的工具链目录"
-            rm -rf mipsel-linux-uclibc
+          # 删除可能存在的空目录或损坏的目录
+          if [ -d "mipsel-linux-uclibc" ]; then
+            if [ -f "mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc" ]; then
+              echo "工具链目录已存在且有效，跳过解压"
+            else
+              echo "删除损坏的工具链目录"
+              rm -rf mipsel-linux-uclibc
+              tar -xJf mipsel-linux-uclibc.tar.xz
+            fi
+          else
+            tar -xJf mipsel-linux-uclibc.tar.xz
           fi
-          
-          tar -xJf mipsel-linux-uclibc.tar.xz
           echo "=== 解压后 ==="
           ls -la
         fi
         
         # 详细检查每个可能的 bin 目录
         echo "=== 检查各 bin 目录内容 ==="
+        GCC_BIN=""
         for bindir in ./bin ./mipsel-linux-uclibc/bin ./toolchain-3.4.x/bin; do
           if [ -d "$bindir" ]; then
             echo "--- $bindir ---"
             ls -la "$bindir" | head -10
-            if [ -f "$bindir/mipsel-linux-uclibc-gcc" ]; then
+            if [ -f "$bindir/mipsel-linux-uclibc-gcc" ] && [ -z "$GCC_BIN" ]; then
               echo "找到编译器在: $bindir"
               GCC_BIN="$bindir/mipsel-linux-uclibc-gcc"
             fi
@@ -101,9 +107,12 @@ jobs:
         
         echo "工具链根目录: $TOOLCHAIN_ROOT"
         
-        # 创建/修复符号链接
-        rm -f mipsel-linux-uclibc
-        ln -sf "$TOOLCHAIN_ROOT" mipsel-linux-uclibc
+        # 创建/修复符号链接（关键修复：使用 -rf）
+        if [ "$TOOLCHAIN_ROOT" != "mipsel-linux-uclibc" ] && [ "$TOOLCHAIN_ROOT" != "./mipsel-linux-uclibc" ]; then
+          echo "创建符号链接: mipsel-linux-uclibc -> $TOOLCHAIN_ROOT"
+          rm -rf mipsel-linux-uclibc
+          ln -sf "$TOOLCHAIN_ROOT" mipsel-linux-uclibc
+        fi
         
         echo "=== 最终验证 ==="
         ls -la mipsel-linux-uclibc/bin/mipsel-linux-uclibc-gcc
